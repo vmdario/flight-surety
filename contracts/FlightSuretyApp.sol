@@ -108,10 +108,12 @@ contract FlightSuretyApp {
      * @dev Register a future flight for insuring.
      *
      */
-    function registerFlight(address airline, string flight, uint256 timestamp) external {
-        bytes32 key = keccak256(
-            abi.encodePacked(airline, flight, timestamp)
-        );
+    function registerFlight(
+        address airline,
+        string flight,
+        uint256 timestamp
+    ) external {
+        bytes32 key = appDataContract.getFlightKey(airline, flight, timestamp);
         flights[key] = Flight({
             isRegistered: true,
             statusCode: STATUS_CODE_ON_TIME,
@@ -130,9 +132,7 @@ contract FlightSuretyApp {
         uint256 timestamp,
         uint8 statusCode
     ) internal {
-        bytes32 key = keccak256(
-            abi.encodePacked(airline, flight, timestamp)
-        );
+        bytes32 key = appDataContract.getFlightKey(airline, flight, timestamp);
         flights[key].statusCode = statusCode;
     }
 
