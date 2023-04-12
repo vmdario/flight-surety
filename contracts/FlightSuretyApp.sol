@@ -79,8 +79,8 @@ contract FlightSuretyApp {
     /*                                       UTILITY FUNCTIONS                                  */
     /********************************************************************************************/
 
-    function isOperational() public pure returns (bool) {
-        return true; // Modify to call data contract's status
+    function isOperational() public view returns (bool) {
+        return appDataContract.isOperational(); // Modify to call data contract's status
     }
 
     /********************************************************************************************/
@@ -108,7 +108,17 @@ contract FlightSuretyApp {
      * @dev Register a future flight for insuring.
      *
      */
-    function registerFlight() external pure {}
+    function registerFlight(address airline, string flight, uint256 timestamp) external {
+        bytes32 key = keccak256(
+            abi.encodePacked(airline, flight, timestamp)
+        );
+        flights[key] = Flight({
+            isRegistered: true,
+            statusCode: STATUS_CODE_ON_TIME,
+            airline: airline,
+            updatedTimestamp: timestamp
+        });
+    }
 
     /**
      * @dev Called after oracle has updated flight status
@@ -116,10 +126,15 @@ contract FlightSuretyApp {
      */
     function processFlightStatus(
         address airline,
-        string memory flight,
+        string flight,
         uint256 timestamp,
         uint8 statusCode
-    ) internal pure {}
+    ) internal {
+        bytes32 key = keccak256(
+            abi.encodePacked(airline, flight, timestamp)
+        );
+        flights[key].statusCode = statusCode;
+    }
 
     // Generate a request for oracles to fetch flight information
     function fetchFlightStatus(

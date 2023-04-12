@@ -9,6 +9,8 @@ contract('Flight Surety Tests', async (accounts) => {
     config = await Test.Config(accounts);
     await config.flightSuretyData.authorizeCaller(config.flightSuretyApp.address);
     await config.flightSuretyApp.setAppDataContract(config.flightSuretyData.address);
+    await config.flightSuretyData.registerAdmin(config.owner);
+    await config.flightSuretyData.registerAdmin(accounts[4]);
   });
 
   /****************************************************************************************/
@@ -79,7 +81,7 @@ contract('Flight Surety Tests', async (accounts) => {
       await config.flightSuretyApp.registerAirline(newAirline, { from: config.firstAirline });
     }
     catch (e) {
-      console.log(e);
+
     }
     let result = await config.flightSuretyData.isAirline.call(newAirline);
 

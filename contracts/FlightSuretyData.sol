@@ -11,9 +11,12 @@ contract FlightSuretyData {
 
     address private contractOwner; // Account used to deploy contract
     bool private operational = true; // Blocks all state changes throughout the contract if false
-    
+    uint constant M = 2;
+    mapping(address => bool) public admins;
+    address[] multiCalls = new address[](0);
     mapping(address => bool) public authorizedCallers;
     struct Airline {
+        bool isRegistered;
         uint256 votes;
         uint256 balance;
     }
@@ -56,7 +59,10 @@ contract FlightSuretyData {
         _;
     }
     modifier requireAuthorizedCaller() {
-        require(msg.sender == contractOwner || authorizedCallers[msg.sender], "Caller is not an authorized caller");
+        require(
+            msg.sender == contractOwner || authorizedCallers[msg.sender],
+            "Caller is not an authorized caller"
+        );
         _;
     }
 
@@ -78,18 +84,43 @@ contract FlightSuretyData {
      *
      * When operational mode is disabled, all write transactions except for this one will fail
      */
-    function setOperatingStatus(bool mode) external requireContractOwner {
-        operational = mode;
+    function setOperatingStatus(bool mode) external {
+        if (contractOwner == msg.sender) {
+            operational = mode;
+            return;
+        }
+
+        require(admins[msg.sender], "Caller is not admin");
+        bool isDuplicate = false;
+        for (uint i = 0; i < multiCalls.length; i++) {
+            if (multiCalls[i] == msg.sender) {
+                isDuplicate = true;
+                break;
+            }
+        }
+        require(!isDuplicate, "Caller has already called this function");
+
+        multiCalls.push(msg.sender);
+        if (multiCalls.length >= M) {
+            operational = mode;
+            multiCalls = new address[](0);
+        }
     }
 
     function isAirline(address airline) public view returns (bool) {
-        return airlines[airline].votes > 0;
+        return airlines[airline].balance >= 10 ether;
     }
 
     /********************************************************************************************/
     /*                                     SMART CONTRACT FUNCTIONS                             */
     /********************************************************************************************/
 
+    function registerAdmin(address caller) external requireContractOwner {
+        admins[caller] = true;
+    }
+    function unregisterAdmin(address caller) external requireContractOwner {
+        admins[caller] = false;
+    }
     function authorizeCaller(address caller) external requireContractOwner {
         authorizedCallers[caller] = true;
     }
@@ -103,9 +134,10 @@ contract FlightSuretyData {
      *      Can only be called from FlightSuretyApp contract
      *
      */
-    function registerAirline(address airline) requireAuthorizedCaller external returns(uint256) {
-        uint256 votes = airlines[airline].votes;
-        airlines[airline].votes = votes.add(1);
+    function registerAirline(
+        address airline
+    ) external requireAuthorizedCaller returns (uint256) {
+        airlines[airline].isRegistered = true;
         return airlines[airline].votes;
     }
 
@@ -132,7 +164,13 @@ contract FlightSuretyData {
      *
      */
     function fund() public payable {
-        airlines[msg.sender].balance = airlines[msg.sender].balance.add(msg.value);
+        require(airlines[msg.sender].isRegistered, "Airline not registered");
+        airlines[msg.sender].balance = airlines[msg.sender].balance.add(
+            msg.value
+        );
+        if (airlines[msg.sender].balance >= 10 ether) {
+            airlines[msg.sender].votes = 1;
+        }
     }
 
     function getFlightKey(
