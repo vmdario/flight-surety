@@ -71,8 +71,9 @@ contract FlightSuretyApp {
      * @dev Contract constructor
      *
      */
-    constructor() public {
+    constructor(address appDataContract_) public {
         contractOwner = msg.sender;
+        appDataContract = FlightSuretyData(appDataContract_);
     }
 
     /********************************************************************************************/
