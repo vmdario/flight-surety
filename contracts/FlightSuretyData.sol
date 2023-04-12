@@ -21,6 +21,8 @@ contract FlightSuretyData {
         uint256 balance;
     }
     mapping(address => Airline) public airlines;
+    uint256 public registeredAirlines = 0;
+    address[] public registrationQueue = new address[](0);
 
     /********************************************************************************************/
     /*                                       EVENT DEFINITIONS                                  */
@@ -63,6 +65,10 @@ contract FlightSuretyData {
             msg.sender == contractOwner || authorizedCallers[msg.sender],
             "Caller is not an authorized caller"
         );
+        _;
+    }
+    modifier requireAirline() {
+        require(isAirline(msg.sender), "Only airline can vote");
         _;
     }
 
@@ -108,7 +114,7 @@ contract FlightSuretyData {
     }
 
     function isAirline(address airline) public view returns (bool) {
-        return airlines[airline].balance >= 10 ether;
+        return airlines[airline].isRegistered && airlines[airline].balance >= 10 ether;
     }
 
     /********************************************************************************************/
@@ -118,15 +124,40 @@ contract FlightSuretyData {
     function registerAdmin(address caller) external requireContractOwner {
         admins[caller] = true;
     }
+
     function unregisterAdmin(address caller) external requireContractOwner {
         admins[caller] = false;
     }
+
     function authorizeCaller(address caller) external requireContractOwner {
         authorizedCallers[caller] = true;
     }
 
     function unauthorizeCaller(address caller) external requireContractOwner {
         authorizedCallers[caller] = false;
+    }
+
+    function voteForNewAirline(address airline) external requireAirline {
+        address foundAddress = address(0);
+        uint i = 0;
+        for (; i < registrationQueue.length; i++) {
+            if (airline == registrationQueue[i]) {
+                foundAddress = airline;
+                break;
+            }
+        }
+        require(
+            foundAddress != address(0),
+            "Airline address not in registration queue"
+        );
+
+        Airline storage newAirline = airlines[airline];
+        newAirline.votes = newAirline.votes.add(1);
+        uint256 quorum = registeredAirlines.div(2);
+        if (newAirline.votes > quorum) {
+            newAirline.isRegistered = true;
+            delete registrationQueue[i];
+        }
     }
 
     /**
@@ -137,8 +168,14 @@ contract FlightSuretyData {
     function registerAirline(
         address airline
     ) external requireAuthorizedCaller returns (uint256) {
-        airlines[airline].isRegistered = true;
-        return airlines[airline].votes;
+        if (registeredAirlines > 4) {
+            registrationQueue.push(airline);
+            return 0;
+        } else {
+            registeredAirlines++;
+            airlines[airline].isRegistered = true;
+            return airlines[airline].votes;
+        }
     }
 
     /**
