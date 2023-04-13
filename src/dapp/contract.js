@@ -32,25 +32,29 @@ export default class Contract {
         });
     }
 
-    isOperational(callback) {
+    isOperational() {
         let self = this;
         console.log('Contract', self)
-        self.flightSuretyApp.methods
+        return self.flightSuretyApp.methods
             .isOperational()
-            .call({ from: self.owner }, callback);
+            .call({ from: self.owner });
     }
 
-    fetchFlightStatus(flight, callback) {
+    fetchFlightStatus(flight) {
         let self = this;
         let payload = {
             airline: self.airlines[0],
             flight: flight,
             timestamp: Math.floor(Date.now() / 1000)
         }
-        self.flightSuretyApp.methods
+        return self.flightSuretyApp.methods
             .fetchFlightStatus(payload.airline, payload.flight, payload.timestamp)
-            .send({ from: self.owner }, (error, result) => {
-                callback(error, payload);
-            });
+            .send({ from: self.passengers[0] });
+    }
+    buyFlightInsurance(airline, flight, timestamp) {
+        let self = this;
+        return self.flightSuretyApp.methods
+            .buyFlightInsurance(airline, flight, timestamp)
+            .send({ from: self.passengers[0], value: '1000000000000000000' });
     }
 }

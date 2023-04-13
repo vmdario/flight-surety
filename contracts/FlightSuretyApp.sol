@@ -137,6 +137,12 @@ contract FlightSuretyApp {
         flights[key].statusCode = statusCode;
     }
 
+    function buyFlightInsurance(address airline, string flight, uint256 timestamp) external payable {
+        bytes32 key = appDataContract.getFlightKey(airline, flight, timestamp);
+        require(flights[key].isRegistered, "Flight is not registered");
+        appDataContract.buy.value(msg.value)(airline);
+    }
+
     // Generate a request for oracles to fetch flight information
     function fetchFlightStatus(
         address airline,

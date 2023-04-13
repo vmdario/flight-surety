@@ -182,7 +182,10 @@ contract FlightSuretyData {
      * @dev Buy insurance for a flight
      *
      */
-    function buy() external payable {}
+    function buy(address airline) external payable {
+        require(airlines[airline].isRegistered, "Airline is not registered");
+        airlines[airline].balance = airlines[airline].balance.add(msg.value);
+    }
 
     /**
      *  @dev Credits payouts to insurees
