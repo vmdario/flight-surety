@@ -101,7 +101,11 @@ contract FlightSuretyApp {
     function registerAirline(
         address airline
     ) external returns (bool success, uint256 votes) {
-        require(msg.sender == contractOwner || appDataContract.isAirline(msg.sender), "Only airline can register");
+        require(
+            msg.sender == contractOwner ||
+                appDataContract.isAirline(msg.sender),
+            "Only airline can register"
+        );
         votes = appDataContract.registerAirline(airline);
         return (true, votes);
     }
@@ -114,14 +118,12 @@ contract FlightSuretyApp {
         address airline,
         string flight,
         uint256 timestamp
-    ) external {
+    ) external requireContractOwner {
         bytes32 key = appDataContract.getFlightKey(airline, flight, timestamp);
-        flights[key] = Flight({
-            isRegistered: true,
-            statusCode: STATUS_CODE_ON_TIME,
-            airline: airline,
-            updatedTimestamp: timestamp
-        });
+        flights[key].isRegistered = true;
+        flights[key].statusCode = STATUS_CODE_ON_TIME;
+        flights[key].airline = airline;
+        flights[key].updatedTimestamp = timestamp;
     }
 
     /**
@@ -133,15 +135,19 @@ contract FlightSuretyApp {
         string flight,
         uint256 timestamp,
         uint8 statusCode
-    ) internal {
+    ) public {
         bytes32 key = appDataContract.getFlightKey(airline, flight, timestamp);
         flights[key].statusCode = statusCode;
     }
 
-    function buyFlightInsurance(address airline, string flight, uint256 timestamp) external payable {
+    function buyFlightInsurance(
+        address airline,
+        string flight,
+        uint256 timestamp
+    ) external payable {
         bytes32 key = appDataContract.getFlightKey(airline, flight, timestamp);
         require(flights[key].isRegistered, "Flight is not registered");
-        appDataContract.buy.value(msg.value)(airline);
+        appDataContract.buy.value(msg.value)(airline, msg.sender);
     }
 
     // Generate a request for oracles to fetch flight information

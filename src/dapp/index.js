@@ -2,13 +2,12 @@
 import DOM from './dom';
 import Contract from './contract';
 import './flightsurety.css';
+import BigNumber from 'bignumber.js';
 
 
 (async () => {
 
-    let result = null;
-
-    let contract = new Contract('localhost', () => {
+    let contract = new Contract('localhost', async() => {
 
         // Read transaction
         contract.isOperational().then(result => {
@@ -17,6 +16,16 @@ import './flightsurety.css';
         }).catch(err => {
             console.log(err);
             display('Operational Status', 'Check if contract is operational error', [{ label: 'Operational Status', error: err }], false, 'display-operational');
+        });
+
+        DOM.elid('wallet').innerText = contract.passengers[0];
+        DOM.elid('balance').innerText = await contract.web3.eth.getBalance(contract.passengers[0]);
+
+        contract.airlines.forEach(airline => {
+            DOM.elid('select-airline').appendChild(DOM.makeElement('option', { value: airline }, airline));
+        });
+        contract.flights.forEach(flight => {
+            DOM.elid('select-flight').appendChild(DOM.makeElement('option', { value: flight }, flight));
         });
 
 
@@ -32,19 +41,27 @@ import './flightsurety.css';
             });
         });
         DOM.elid('buy-insurance').addEventListener('click', () => {
-            let airline = DOM.elid('buy-insurance-airline').value;
-            let flight = DOM.elid('buy-insurance-flight').value;
-            let timestamp = DOM.elid('buy-insurance-timestamp').value;
+            let airline = DOM.elid('select-airline').value;
+            let flight = DOM.elid('select-flight').value;
+            let amount = DOM.elid('airline-amount').value;
+            let timestamp = '1';
             console.log(airline, flight, timestamp)
             // Write transaction
-            contract.buyFlightInsurance(airline, flight, timestamp).then(result => {
-                console.log(error, result);
-                display('Buy insurance result', '', [{ label: 'Result', value: result }], true);
+            contract.buyFlightInsurance(airline, flight, timestamp, new BigNumber(10).pow(18).times(amount).toString()).then(result => {
+                console.log(result);
+                display('Buy insurance result', '', [{ label: 'Result', value: 'Insurance purchased: ' + result.transactionHash }], true);
             }).catch(err => {
                 console.log(err);
                 display('Buy insurance result', '', [{ label: 'Error', error: err }], true);
             });
         });
+
+        setTimeout(() => {
+            contract.initializeFlights();
+        }, 200);
+        setTimeout(() => {
+            contract.registerOracles();
+        }, 200);
 
     });
     window.AppContract = contract;

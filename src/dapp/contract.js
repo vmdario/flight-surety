@@ -8,10 +8,11 @@ export default class Contract {
         let config = Config[network];
         this.web3 = new Web3(new Web3.providers.HttpProvider(config.url));
         this.flightSuretyApp = new this.web3.eth.Contract(FlightSuretyApp.abi, config.appAddress);
-        this.initialize(callback);
         this.owner = null;
         this.airlines = [];
         this.passengers = [];
+        this.flights = ['F10001', 'F00002'];
+        this.initialize(callback);
     }
 
     initialize(callback) {
@@ -20,7 +21,7 @@ export default class Contract {
 
             let counter = 1;
 
-            while (this.airlines.length < 5) {
+            while (this.airlines.length < 2) {
                 this.airlines.push(accts[counter++]);
             }
 
@@ -30,6 +31,24 @@ export default class Contract {
 
             callback();
         });
+    }
+    
+    initializeFlights() {
+        for (let i = 0; i < this.flights.length; i++) {
+            console.log(this.airlines[0], this.flights[i])
+            this.registerFlight(this.airlines[i], this.flights[i], '1')
+                .then(() => console.log('Flight registered'))
+                .catch(console.error);
+        }
+    }
+    async registerOracles() {
+        console.log('Registering oracles');
+        const accounts = await this.web3.eth.getAccounts();
+        for (let i = 0; i < accounts.length; i++) {
+            console.log('Registering oracle from '+ accounts[i]);
+            await this.flightSuretyApp.methods.registerOracle().send({ from: accounts[i], value: '1000000000000000000', gas: 100000 })
+                .catch(console.error);
+        }
     }
 
     isOperational() {
@@ -45,16 +64,22 @@ export default class Contract {
         let payload = {
             airline: self.airlines[0],
             flight: flight,
-            timestamp: Math.floor(Date.now() / 1000)
+            timestamp: '1'
         }
         return self.flightSuretyApp.methods
             .fetchFlightStatus(payload.airline, payload.flight, payload.timestamp)
             .send({ from: self.passengers[0] });
     }
-    buyFlightInsurance(airline, flight, timestamp) {
+    registerFlight(airline, flight, timestamp) {
+        let self = this;
+        return self.flightSuretyApp.methods
+            .registerFlight(airline, flight, timestamp)
+            .send({ from: self.owner, gas: 100000 });
+    }
+    buyFlightInsurance(airline, flight, timestamp, value) {
         let self = this;
         return self.flightSuretyApp.methods
             .buyFlightInsurance(airline, flight, timestamp)
-            .send({ from: self.passengers[0], value: '1000000000000000000' });
+            .send({ from: self.passengers[0], value });
     }
 }

@@ -25,6 +25,13 @@
       >
         <span class="navbar-toggler-icon"></span>
       </button>
+      <div class="collapse navbar-collapse" id="navbarText">
+        <ul class="navbar-nav mr-auto">
+        </ul>
+        <div class="navbar-text">
+          Wallet: <span id="wallet"></span> || Balance: <span id="balance"></span> ETH
+        </div>
+      </div>
     </nav>
 
     <main class="container top-20">
@@ -36,13 +43,14 @@
       </div>
     </main>
     <div class="container">
-      <h3>Buy insurance</h3>
+      <h3>Flight Insurance</h3>
       <div class="row">
-        <label class="form">Airline</label> <input type="text" id="buy-insurance-airline" />
-        <label class="form">Flight</label> <input type="text" id="buy-insurance-flight" />
-        <label class="form">Timestamp</label> <input type="text" id="buy-insurance-timestamp" />
-        <button class="btn btn-primary" id="buy-insurance">Buy</button>
+        <label class="form">Airline</label
+        ><select id="select-airline"></select>
       </div>
+      <div class="row"><label class="form">Flight</label> <select id="select-flight"></select></div>
+      <div class="row"><label class="form">Amount in ether (ETH)</label> <input type="number" id="airline-amount" max="1" /></div>
+      <button class="btn btn-primary" id="buy-insurance">Buy insurance</button>
     </div>
   </body>
 </html>

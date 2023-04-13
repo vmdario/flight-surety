@@ -22,6 +22,12 @@ contract FlightSuretyData {
     }
     mapping(address => Airline) public airlines;
     uint256 public registeredAirlines = 0;
+    struct Insuree {
+        address airline;
+        uint256 balance;
+        bool creditInsuree;
+    }
+    mapping(address => Insuree) public insurees;
     address[] public registrationQueue = new address[](0);
 
     /********************************************************************************************/
@@ -182,21 +188,31 @@ contract FlightSuretyData {
      * @dev Buy insurance for a flight
      *
      */
-    function buy(address airline) external payable {
+    function buy(address airline, address insuree) external payable {
         require(isAirline(airline), "Airline is not registered");
         airlines[airline].balance = airlines[airline].balance.add(msg.value);
+        insurees[insuree].airline = airline;
+        insurees[insuree].balance = insurees[insuree].balance.add(msg.value);
     }
 
     /**
      *  @dev Credits payouts to insurees
      */
-    function creditInsurees() external pure {}
+    function creditInsurees(address airline) external {
+        require(insurees[msg.sender].balance > 0, "Not enough balance");
+        insurees[msg.sender].creditInsuree = true;
+    }
 
     /**
      *  @dev Transfers eligible payout funds to insuree
      *
      */
-    function pay() external pure {}
+    function pay() external {
+        require(insurees[msg.sender].creditInsuree);
+        require(insurees[msg.sender].balance > 0, "Not enough balance");
+        insurees[msg.sender].balance = 0;
+        msg.sender.transfer(insurees[msg.sender].balance);
+    }
 
     /**
      * @dev Initial funding for the insurance. Unless there are too many delayed flights
