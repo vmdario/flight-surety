@@ -138,6 +138,7 @@ contract FlightSuretyData {
     }
 
     function voteForNewAirline(address airline) external requireAirline {
+        Airline storage newAirline = airlines[airline];
         address foundAddress = address(0);
         uint i = 0;
         for (; i < registrationQueue.length; i++) {
@@ -151,7 +152,6 @@ contract FlightSuretyData {
             "Airline address not in registration queue"
         );
 
-        Airline storage newAirline = airlines[airline];
         newAirline.votes = newAirline.votes.add(1);
         uint256 quorum = registeredAirlines.div(2);
         if (newAirline.votes > quorum) {
@@ -183,7 +183,7 @@ contract FlightSuretyData {
      *
      */
     function buy(address airline) external payable {
-        require(airlines[airline].isRegistered, "Airline is not registered");
+        require(isAirline(airline), "Airline is not registered");
         airlines[airline].balance = airlines[airline].balance.add(msg.value);
     }
 

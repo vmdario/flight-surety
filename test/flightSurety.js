@@ -8,9 +8,9 @@ contract('Flight Surety Tests', async (accounts) => {
   before('setup contract', async () => {
     config = await Test.Config(accounts);
     await config.flightSuretyData.authorizeCaller(config.flightSuretyApp.address);
-    await config.flightSuretyApp.setAppDataContract(config.flightSuretyData.address);
-    await config.flightSuretyData.registerAdmin(config.owner);
-    await config.flightSuretyData.registerAdmin(accounts[4]);
+    await config.flightSuretyData.registerAdmin(config.firstAirline); // first airline
+    await config.flightSuretyApp.registerAirline(config.firstAirline, { from: config.owner });
+    await config.flightSuretyData.fund({ from: config.firstAirline, value: new BigNumber(10).times(config.weiMultiple) });
   });
 
   /****************************************************************************************/
@@ -90,5 +90,34 @@ contract('Flight Surety Tests', async (accounts) => {
 
   });
 
+  it('(multiparty) Only existing airline may register a new airline until there are at least four airlines registered', async () => {
+    let failed = false;
+    try {
+      await config.flightSuretyApp.registerAirline(accounts[3], { from: accounts[4] });
+    } catch (e) {
+      failed = true;
+    }
+    assert.equal(failed, true, "Only existing airline may register a new airline");
 
+    // register 3 more airlines with firstAirline
+    for (let i = 2; i <= 4; ++i) {
+      await config.flightSuretyApp.registerAirline(accounts[i], { from: config.firstAirline });
+      await config.flightSuretyData.fund({ from: accounts[i], value: new BigNumber(10).times(config.weiMultiple) });
+    }
+
+    // fifth airline must be voted first therefore it's not registered yet
+    await config.flightSuretyApp.registerAirline(accounts[5], { from: config.firstAirline });
+    const airline = await config.flightSuretyData.airlines.call(accounts[5]);
+    assert.equal(airline.isRegistered, false, "Five or more airlines must be voted to get registered");
+  });
+  
+  it('(multiparty) Registration of fifth and subsequent airlines requires multi-party consensus of 50% of registered airlines', async () => {
+    const newAirline = accounts[5];
+    
+    for (let i = 1; i < 4; ++i) {
+      await config.flightSuretyData.voteForNewAirline(newAirline, { from: accounts[i] });
+    }
+    const airline = await config.flightSuretyData.airlines.call(newAirline);
+    assert.equal(airline.isRegistered, true, "Five or more airlines must be voted to get registered");
+  });
 });

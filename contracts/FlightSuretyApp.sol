@@ -101,6 +101,7 @@ contract FlightSuretyApp {
     function registerAirline(
         address airline
     ) external returns (bool success, uint256 votes) {
+        require(msg.sender == contractOwner || appDataContract.isAirline(msg.sender), "Only airline can register");
         votes = appDataContract.registerAirline(airline);
         return (true, votes);
     }
