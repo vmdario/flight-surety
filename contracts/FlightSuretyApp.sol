@@ -121,7 +121,7 @@ contract FlightSuretyApp {
     ) external requireContractOwner {
         bytes32 key = appDataContract.getFlightKey(airline, flight, timestamp);
         flights[key].isRegistered = true;
-        flights[key].statusCode = STATUS_CODE_ON_TIME;
+        flights[key].statusCode = STATUS_CODE_UNKNOWN;
         flights[key].airline = airline;
         flights[key].updatedTimestamp = timestamp;
     }
@@ -135,7 +135,7 @@ contract FlightSuretyApp {
         string flight,
         uint256 timestamp,
         uint8 statusCode
-    ) public {
+    ) internal {
         bytes32 key = appDataContract.getFlightKey(airline, flight, timestamp);
         flights[key].statusCode = statusCode;
     }
@@ -156,13 +156,15 @@ contract FlightSuretyApp {
         string flight,
         uint256 timestamp
     ) external {
+        bytes32 key = appDataContract.getFlightKey(airline, flight, timestamp);
+        require(flights[key].isRegistered, "Flight is not registered");
         uint8 index = getRandomIndex(msg.sender);
 
         // Generate a unique key for storing the request
-        bytes32 key = keccak256(
+        bytes32 keyOracle = keccak256(
             abi.encodePacked(index, airline, flight, timestamp)
         );
-        oracleResponses[key] = ResponseInfo({
+        oracleResponses[keyOracle] = ResponseInfo({
             requester: msg.sender,
             isOpen: true
         });
@@ -234,7 +236,8 @@ contract FlightSuretyApp {
 
         uint8[3] memory indexes = generateIndexes(msg.sender);
 
-        oracles[msg.sender] = Oracle({isRegistered: true, indexes: indexes});
+        oracles[msg.sender].isRegistered = true;
+        oracles[msg.sender].indexes = indexes;
     }
 
     function getMyIndexes() external view returns (uint8[3]) {

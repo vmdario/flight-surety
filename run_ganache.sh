@@ -10,4 +10,7 @@
 # (7) 0x0F4F2Ac550A1b4e2280d04c21cEa7EBD822934b5 (1000 ETH)
 # (8) 0x6330A553Fc93768F612722BB8c2eC78aC90B3bbc (1000 ETH)
 # (9) 0x5AEDA56215b167893e80B4fE645BA6d5Bab767DE (1000 ETH)
-ganache -m "candy maple cake sugar pudding cream honey rich smooth crumble sweet treat"
+ganache ethereum -m "candy maple cake sugar pudding cream honey rich smooth crumble sweet treat" \
+	-a 50 \
+	-l "0x98967F" \
+	--miner.defaultTransactionGasLimit "0x7A120"

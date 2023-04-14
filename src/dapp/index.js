@@ -31,10 +31,12 @@ import BigNumber from 'bignumber.js';
 
         // User-submitted transaction
         DOM.elid('submit-oracle').addEventListener('click', () => {
+            let airline = DOM.elid('flight-airline').value;
             let flight = DOM.elid('flight-number').value;
+            let timestamp = DOM.elid('flight-timestamp').value;
             // Write transaction
-            contract.fetchFlightStatus(flight).then(result => {
-                display('Oracles', 'Trigger oracles', [{ label: 'Fetch Flight Status', value: result.flight + ' ' + result.timestamp }], true);
+            contract.fetchFlightStatus(airline, flight, timestamp).then(result => {
+                display('Oracles', 'Trigger oracles', [{ label: 'Fetch Flight Status', value: result.status }], true);
             }).catch(err => {
                 console.log(err);
                 display('Oracles', 'Trigger oracles', [{ label: 'Fetch Flight Status error', error: err }], true);
@@ -44,7 +46,7 @@ import BigNumber from 'bignumber.js';
             let airline = DOM.elid('select-airline').value;
             let flight = DOM.elid('select-flight').value;
             let amount = DOM.elid('airline-amount').value;
-            let timestamp = '1';
+            let timestamp = DOM.elid('bi-timestamp').value;
             console.log(airline, flight, timestamp)
             // Write transaction
             contract.buyFlightInsurance(airline, flight, timestamp, new BigNumber(10).pow(18).times(amount).toString()).then(result => {
@@ -55,13 +57,6 @@ import BigNumber from 'bignumber.js';
                 display('Buy insurance result', '', [{ label: 'Error', error: err }], true);
             });
         });
-
-        setTimeout(() => {
-            contract.initializeFlights();
-        }, 200);
-        setTimeout(() => {
-            contract.registerOracles();
-        }, 200);
 
     });
     window.AppContract = contract;

@@ -2,26 +2,25 @@ import FlightSuretyApp from '../../build/contracts/FlightSuretyApp.json';
 import Config from './config.json';
 import Web3 from 'web3';
 import express from 'express';
-
+import { OracleManager } from './oracles';
+import { FlightManager } from './flights';
 
 let config = Config['localhost'];
 let web3 = new Web3(new Web3.providers.WebsocketProvider(config.url.replace('http', 'ws')));
-web3.eth.defaultAccount = web3.eth.accounts[0];
 let flightSuretyApp = new web3.eth.Contract(FlightSuretyApp.abi, config.appAddress);
+const oracleManager = new OracleManager(flightSuretyApp);
+const flightManager = new FlightManager(flightSuretyApp);
 
+async function start() {
+  const accounts = await web3.eth.getAccounts();
+  web3.eth.defaultAccount = accounts[15];
 
-flightSuretyApp.events.OracleRequest({
-  fromBlock: 0
-}, async function (error, event) {
-  if (error) console.log(error)
-  else {
-    console.log(event);
-    const accounts = await web3.eth.getAccounts();
-    const status = 20;
-    flightSuretyApp.methods.processFlightStatus(event.returnValues.airline, event.returnValues.flight, event.returnValues.timestamp, status)
-      .send({ from: accounts[0] }).catch(console.error);
-  }
-});
+  await flightManager.registerFlights(accounts[0], accounts.slice(1, 6));
+  
+  await oracleManager.registerOracles(accounts.slice(11));
+  oracleManager.handleOracleRequestEvents();
+}
+start().catch(console.error);
 
 const app = express();
 app.get('/api', (req, res) => {

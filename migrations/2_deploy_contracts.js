@@ -11,13 +11,14 @@ module.exports = function (deployer) {
     deployer.deploy(FlightSuretyData)
         .then(() => {
             return deployer.deploy(FlightSuretyApp, FlightSuretyData.address)
-                .then(async() => {
+                .then(async () => {
                     let config = {
                         localhost: {
                             url: 'http://localhost:8545',
                             dataAddress: FlightSuretyData.address,
                             appAddress: FlightSuretyApp.address
-                        }
+                        },
+                        "flights": ["F10001", "F00002", "X74993", "A00222", "V90003"]
                     }
                     appContract = await FlightSuretyApp.deployed();
                     dataContract = await FlightSuretyData.deployed();
