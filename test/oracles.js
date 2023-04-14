@@ -5,6 +5,8 @@ var Test = require('../config/testConfig.js');
 contract('Oracles', async (accounts) => {
 
   const TEST_ORACLES_COUNT = 20;
+  const timestamp = Math.floor(Date.now() / 1000);
+  const flight = 'ND1309';
   var config;
   before('setup contract', async () => {
     config = await Test.Config(accounts);
@@ -16,6 +18,8 @@ contract('Oracles', async (accounts) => {
     const STATUS_CODE_LATE_WEATHER = 30;
     const STATUS_CODE_LATE_TECHNICAL = 40;
     const STATUS_CODE_LATE_OTHER = 50;
+
+    await config.flightSuretyApp.registerFlight(config.firstAirline, flight, timestamp, { from: config.owner });
 
   });
 
@@ -34,10 +38,6 @@ contract('Oracles', async (accounts) => {
   });
 
   it('can request flight status', async () => {
-
-    // ARRANGE
-    let flight = 'ND1309'; // Course number
-    let timestamp = Math.floor(Date.now() / 1000);
 
     // Submit a request for oracles to get status information for a flight
     await config.flightSuretyApp.fetchFlightStatus(config.firstAirline, flight, timestamp);
@@ -60,7 +60,7 @@ contract('Oracles', async (accounts) => {
         }
         catch (e) {
           // Enable this when debugging
-          //console.log('\nError', idx, oracleIndexes[idx].toNumber(), flight, timestamp);
+          // console.log('\nError', idx, oracleIndexes[idx].toNumber(), flight, timestamp);
         }
 
       }
