@@ -37,6 +37,15 @@ export class OracleManager {
 				const status = (1 + (Math.floor(Math.random() * 10) % 5)) * 10;
 				const index = event.returnValues.index;
 				for (const oracle of self.oracleIndexAddressesMap[index]) {
+					console.log(
+						'Submitting response:',
+						index,
+						oracle,
+						event.returnValues.airline,
+						event.returnValues.flight,
+						event.returnValues.timestamp,
+						status
+					);
 					self.flightSuretyApp.methods.submitOracleResponse(
 						index,
 						event.returnValues.airline,

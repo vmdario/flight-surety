@@ -26,34 +26,95 @@
         <span class="navbar-toggler-icon"></span>
       </button>
       <div class="collapse navbar-collapse" id="navbarText">
-        <ul class="navbar-nav mr-auto">
-        </ul>
-        <div class="navbar-text">
-          Wallet: <span id="wallet"></span> || Balance: <span id="balance"></span> ETH
-        </div>
+        <ul class="navbar-nav mr-auto"></ul>
+        <div class="navbar-text">Wallet: <span id="wallet"></span> || Balance: <span id="balance"></span> ETH</div>
       </div>
     </nav>
 
-    <main class="container top-20">
+    <div class="container top-20">
       <div id="display-operational" class="top-20"></div>
-      <div id="display-wrapper" class="top-20"></div>
-      <div class="row top-20">
-        <label class="form">Airline</label> <input type="text" id="flight-airline" value="0xf17f52151EbEF6C7334FAD080c5704D77216b732" />
-        <label class="form">Flight</label> <input type="text" id="flight-number" value="F10001" />
-        <label class="form">Timestamp</label> <input type="text" id="flight-timestamp" value="1" />
-        <button class="btn btn-primary" id="submit-oracle">Submit to Oracles</button>
-      </div>
-    </main>
+    </div>
+
     <div class="container">
-      <h3>Flight Insurance</h3>
+      <h3>Fetch Flight Status</h3>
       <div class="row">
-        <label class="form">Airline</label
-        ><select id="select-airline"></select>
+        <div class="col">
+          <div class="row">
+            <div class="col">
+              <div class="row">
+                <label class="form">Airline</label>
+                <select id="flight-airline"></select>
+              </div>
+              <div class="row">
+                <label class="form">Flight</label> <select id="flight-number"></select>
+              </div>
+              <div class="row">
+                <label class="form">Timestamp</label> <input type="text" id="flight-timestamp" value="1" />
+              </div>
+              <button class="btn btn-primary" id="submit-oracle">Submit to Oracles</button>
+            </div>
+          </div>
+        </div>
+        <div class="col">
+          <p>Result:</p>
+          <div id="display-wrapper-status"></div>
+        </div>
       </div>
-      <div class="row"><label class="form">Flight</label> <select id="select-flight"></select></div>
-      <div class="row"><label class="form">Timestamp</label> <input type="text" id="bi-timestamp" /></div>
-      <div class="row"><label class="form">Amount in ether (ETH)</label> <input type="number" id="airline-amount" max="1" /></div>
-      <button class="btn btn-primary" id="buy-insurance">Buy insurance</button>
+    </div>
+
+    <div class="container">
+      <h3>Buy Flight Insurance</h3>
+      <div class="row">
+        <div class="col">
+          <div class="row">
+            <label class="form">Airline</label
+            ><select id="bi-select-airline"></select>
+          </div>
+          <div class="row">
+            <label class="form">Flight</label>
+            <select id="bi-select-flight"></select>
+          </div>
+          <div class="row"><label class="form">Timestamp</label> <input type="text" id="bi-timestamp" value="1" /></div>
+          <div class="row">
+            <label class="form">Amount in ether (ETH)</label>
+            <input type="number" id="bi-airline-amount" min="0" max="1" />
+          </div>
+          <button class="btn btn-primary" id="buy-insurance">Buy insurance</button>
+        </div>
+        <div class="col">
+          <p>Result:</p>
+          <div id="display-wrapper-buy-insurance"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="container">
+      <h3>Withdraw Flight Insurance</h3>
+      <div class="row">
+        <div class="col">
+          <div class="row">
+            <label class="form">Airline</label
+            ><select id="wi-select-airline"></select>
+          </div>
+          <div class="row">
+            <label class="form">Flight</label>
+            <select id="wi-select-flight"></select>
+          </div>
+          <div class="row"><label class="form">Timestamp</label> <input type="text" id="wi-timestamp" value="1" /></div>
+          <div class="row">
+            <div class="col">
+              <button class="btn btn-primary" id="credit-insuree">Credit insuree</button>
+            </div>
+            <div class="col">
+              <button class="btn btn-primary" id="pay-insuree">Pay insuree</button>
+            </div>
+          </div>
+        </div>
+        <div class="col">
+          <p>Result:</p>
+          <div id="display-wrapper-withdraw-insurance"></div>
+        </div>
+      </div>
     </div>
   </body>
 </html>

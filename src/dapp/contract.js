@@ -60,10 +60,24 @@ export default class Contract {
                     }, function (error, event) {
                         if (error) {
                             console.log(error);
-                            reject(error);
+                            reject(new Error("Oracles may be inactive or flight is not found"));
                         } else {
-                            console.log(event);
-                            resolve(event.returnValues);
+                            console.log(event.returnValues);
+                            const values = {
+                                status: "",
+                                flight: event.returnValues.flight,
+                                airline: event.returnValues.airline,
+                                timestamp: event.returnValues.timestamp
+                            };
+                            switch (event.returnValues.status) {
+                                case "10": values.status = 'On Time'; break;
+                                case "20": values.status = 'Late Airline'; break;
+                                case "30": values.status = 'Late Weather'; break;
+                                case "40": values.status = 'Late Technical'; break;
+                                case "50": values.status = 'Late Other'; break;
+                                default: values.status = 'Unknown';
+                            }
+                            resolve(values);
                         }
                     });
                 });
@@ -74,5 +88,17 @@ export default class Contract {
         return self.flightSuretyApp.methods
             .buyFlightInsurance(airline, flight, timestamp)
             .send({ from: self.passengers[0], value });
+    }
+    creditInsuree(airline, flight, timestamp) {
+        let self = this;
+        return self.flightSuretyApp.methods
+            .creditInsuree(airline, flight, timestamp)
+            .send({ from: self.passengers[0] });
+    }
+    payInsuree(airline, flight, timestamp) {
+        let self = this;
+        return self.flightSuretyApp.methods
+            .payInsuree(airline, flight, timestamp)
+            .send({ from: self.passengers[0] });
     }
 }

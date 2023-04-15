@@ -23,11 +23,10 @@ contract FlightSuretyData {
     mapping(address => Airline) public airlines;
     uint256 public registeredAirlines = 0;
     struct Insuree {
-        address airline;
         uint256 balance;
         bool creditInsuree;
     }
-    mapping(address => Insuree) public insurees;
+    mapping(bytes32 => Insuree) public insurees;
     address[] public registrationQueue = new address[](0);
 
     /********************************************************************************************/
@@ -120,7 +119,9 @@ contract FlightSuretyData {
     }
 
     function isAirline(address airline) public view returns (bool) {
-        return airlines[airline].isRegistered && airlines[airline].balance >= 10 ether;
+        return
+            airlines[airline].isRegistered &&
+            airlines[airline].balance >= 10 ether;
     }
 
     /********************************************************************************************/
@@ -188,30 +189,48 @@ contract FlightSuretyData {
      * @dev Buy insurance for a flight
      *
      */
-    function buy(address airline, address insuree) external payable {
+    function buy(
+        address airline,
+        string flight,
+        address insuree
+    ) external payable requireAuthorizedCaller {
         require(isAirline(airline), "Airline is not registered");
         airlines[airline].balance = airlines[airline].balance.add(msg.value);
-        insurees[insuree].airline = airline;
-        insurees[insuree].balance = insurees[insuree].balance.add(msg.value);
+        bytes32 key = getInsureeKey(airline, flight, insuree);
+        insurees[key].balance = insurees[key].balance.add(msg.value);
     }
 
     /**
      *  @dev Credits payouts to insurees
      */
-    function creditInsurees(address airline) external {
-        require(insurees[msg.sender].balance > 0, "Not enough balance");
-        insurees[msg.sender].creditInsuree = true;
+    function creditInsuree(
+        address airline,
+        string flight,
+        address insuree
+    ) external requireAuthorizedCaller {
+        require(isAirline(airline), "Airline is not registered");
+        bytes32 key = getInsureeKey(airline, flight, insuree);
+        require(insurees[key].balance > 0, "Not enough balance");
+        insurees[key].creditInsuree = true;
     }
 
     /**
      *  @dev Transfers eligible payout funds to insuree
      *
      */
-    function pay() external {
-        require(insurees[msg.sender].creditInsuree);
-        require(insurees[msg.sender].balance > 0, "Not enough balance");
-        insurees[msg.sender].balance = 0;
-        msg.sender.transfer(insurees[msg.sender].balance);
+    function pay(
+        address airline,
+        string flight,
+        address insuree
+    ) external requireAuthorizedCaller {
+        require(isAirline(airline), "Airline is not registered");
+        bytes32 key = getInsureeKey(airline, flight, insuree);
+        require(insurees[key].creditInsuree, "No credit insuree yet");
+        require(insurees[key].balance > 0, "Not enough balance");
+        uint256 balance = insurees[key].balance;
+        insurees[key].balance = 0;
+        airlines[airline].balance = airlines[airline].balance.sub(balance);
+        insuree.transfer(balance);
     }
 
     /**
@@ -235,6 +254,14 @@ contract FlightSuretyData {
         uint256 timestamp
     ) public pure returns (bytes32) {
         return keccak256(abi.encodePacked(airline, flight, timestamp));
+    }
+
+    function getInsureeKey(
+        address airline,
+        string memory flight,
+        address insuree
+    ) public pure returns (bytes32) {
+        return keccak256(abi.encodePacked(airline, flight, insuree));
     }
 
     /**

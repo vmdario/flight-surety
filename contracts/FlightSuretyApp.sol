@@ -147,7 +147,31 @@ contract FlightSuretyApp {
     ) external payable {
         bytes32 key = appDataContract.getFlightKey(airline, flight, timestamp);
         require(flights[key].isRegistered, "Flight is not registered");
-        appDataContract.buy.value(msg.value)(airline, msg.sender);
+        appDataContract.buy.value(msg.value)(airline, flight, msg.sender);
+    }
+
+    function creditInsuree(
+        address airline,
+        string flight,
+        uint256 timestamp
+    ) external {
+        bytes32 key = appDataContract.getFlightKey(airline, flight, timestamp);
+        require(flights[key].isRegistered, "Flight is not registered");
+        require(
+            flights[key].statusCode == STATUS_CODE_LATE_AIRLINE,
+            "Flight is not late airline"
+        );
+        appDataContract.creditInsuree(airline, flight, msg.sender);
+    }
+
+    function payInsuree(
+        address airline,
+        string flight,
+        uint256 timestamp
+    ) external {
+        bytes32 key = appDataContract.getFlightKey(airline, flight, timestamp);
+        require(flights[key].isRegistered, "Flight is not registered");
+        appDataContract.pay(airline, flight, msg.sender);
     }
 
     // Generate a request for oracles to fetch flight information
