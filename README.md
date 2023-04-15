@@ -37,7 +37,7 @@ Start ganache:
 
 ## Develop Client
 
-To run truffle tests:
+Open another terminal to run truffle tests:
 
 `truffle test ./test/flightSurety.js`
 
@@ -61,21 +61,16 @@ Start server in a new terminal:
 
 `npm run server`
 
-At this point all flights and oracles have been registered successfully:
+At this point, all flights and oracles have been registered successfully:
 ![img3](img/fs_server.png)
 
 
-Open the browser in `http://localhost:8000` to interact with the dapp.
+Open the browser in `http://localhost:8001` to interact with the dapp.
 
+The dapp loads with the default values in the forms, just click the buttons to perform the operations and the results will appear on the right side of each panel.
 
+- `Fetch flight status` will send events to the oracles and receive random statuses of the flights back.
+- `Buy flight insurance` allows the user to buy at most 1 ether of insurance for a flight
+- `Withdraw flight insurance` has two operations to be performed in order the user to withdraw the funds. First click the `Request credit insuree` to register the withdraw intent and once successful click `Withdraw insurance` to receive the funds back. Obs: The user must have the insurance and the flight must be "Late airline" status.
 
-## Resources
-
-* [How does Ethereum work anyway?](https://medium.com/@preethikasireddy/how-does-ethereum-work-anyway-22d1df506369)
-* [BIP39 Mnemonic Generator](https://iancoleman.io/bip39/)
-* [Truffle Framework](http://truffleframework.com/)
-* [Ganache Local Blockchain](http://truffleframework.com/ganache/)
-* [Remix Solidity IDE](https://remix.ethereum.org/)
-* [Solidity Language Reference](http://solidity.readthedocs.io/en/v0.4.24/)
-* [Ethereum Blockchain Explorer](https://etherscan.io/)
-* [Web3Js Reference](https://github.com/ethereum/wiki/wiki/JavaScript-API)
+![dapp](img/fs_dapp.png)

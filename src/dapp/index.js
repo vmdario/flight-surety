@@ -34,6 +34,13 @@ import BigNumber from 'bignumber.js';
             let airline = DOM.elid('flight-airline').value;
             let flight = DOM.elid('flight-number').value;
             let timestamp = DOM.elid('flight-timestamp').value;
+            if (!airline || !flight || !timestamp) {
+                display('', '', [{
+                    label: 'Form validation error',
+                    error: new Error("Any form fields must not be empty")
+                }], true, 'display-wrapper-status');
+                return;
+            }
             // Write transaction
             contract.fetchFlightStatus(airline, flight, timestamp).then(result => {
                 display('Oracles', 'Trigger oracles', [{ label: 'Flight Status', value: result.status }], true, 'display-wrapper-status');
@@ -51,6 +58,13 @@ import BigNumber from 'bignumber.js';
             let amount = DOM.elid('bi-airline-amount').value;
             let timestamp = DOM.elid('bi-timestamp').value;
             console.log(airline, flight, timestamp)
+            if (!airline || !flight || !timestamp || !amount) {
+                display('', '', [{
+                    label: 'Form validation error',
+                    error: new Error("Any form fields must not be empty")
+                }], true, 'display-wrapper-buy-insurance');
+                return;
+            }
             // Write transaction
             contract.buyFlightInsurance(airline, flight, timestamp, new BigNumber(10).pow(18).times(amount).toString()).then(result => {
                 console.log(result);
@@ -69,6 +83,13 @@ import BigNumber from 'bignumber.js';
             let flight = DOM.elid('wi-select-flight').value;
             let timestamp = DOM.elid('wi-timestamp').value;
             console.log(airline, flight, timestamp)
+            if (!airline || !flight || !timestamp) {
+                display('', '', [{
+                    label: 'Form validation error',
+                    error: new Error("Any form fields must not be empty")
+                }], true, 'display-wrapper-withdraw-insurance');
+                return;
+            }
             // Write transaction
             contract.creditInsuree(airline, flight, timestamp).then(result => {
                 console.log(result);
@@ -90,6 +111,13 @@ import BigNumber from 'bignumber.js';
             let flight = DOM.elid('wi-select-flight').value;
             let timestamp = DOM.elid('wi-timestamp').value;
             console.log(airline, flight, timestamp)
+            if (!airline || !flight || !timestamp) {
+                display('', '', [{
+                    label: 'Form validation error',
+                    error: new Error("Any form fields must not be empty")
+                }], true, 'display-wrapper-withdraw-insurance');
+                return;
+            }
             // Write transaction
             contract.payInsuree(airline, flight, timestamp).then(result => {
                 console.log(result);
